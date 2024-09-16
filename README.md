@@ -1,6 +1,18 @@
 # ur_admin-backend
 backend project to work with ur-admin-site that is frontend
 
+# Go lang
+
+comands to connect go with firebase Sept 2024
+
+1. create module
+> go mod init <project-name>
+2. install firebase SKD on go
+> go get firebase.google.com/go/v4
+3. create code of project, start point file should be main.go and create another file you needed.
+4. run project
+> go run main.go
+
 # Docker file
 
 this project containt a docker file to run in container dev on local
