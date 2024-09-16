@@ -1,5 +1,6 @@
 FROM ubuntu:24.04
 RUN apt update -y && apt upgrade -y && apt install golang-go -y && apt install git -y
+WORKDIR project
 VOLUME code
 EXPOSE 8080
 RUN touch run.sh
