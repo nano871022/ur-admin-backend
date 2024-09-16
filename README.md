@@ -1,6 +1,9 @@
 # ur_admin-backend
 backend project to work with ur-admin-site that is frontend
 
+create hardling from folder with credentials files to /project/code/resources/credentials, this help us with security and dont upload this files in this project
+> ln <folder-credentilas/<firebase-credential>.json credentials.json
+
 # Go lang
 
 comands to connect go with firebase Sept 2024
