@@ -8,6 +8,10 @@ import (
 )
 
 func FCMHandler(w http.ResponseWriter, r *http.Request){
+    if err := CheckLogin(r); err != nil {
+      http.Error(w, err.Error(), http.StatusUnauthorized)   
+        return
+    }
     var msg models.FCMMessage
     if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
         http.Error(w, "Bad request", http.StatusBadRequest)

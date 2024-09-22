@@ -2,38 +2,66 @@ package services
 
 import (
     //"context"
-    "firebase.google.com/go/v4/auth"
+    //"firebase.google.com/go/v4/auth"
     "log"
     //"google.golang.org/api/option"
+    "ur-admin-backend/models"
+    "github.com/golang-jwt/jwt"
+    "time"
+    "fmt"
+    "ur-admin-backend/utils"
 )
 
-func VerifyToken(tokenString string) (*auth.Token, error) {
+func VerifyToken(tokenString string) (bool, error) {
     log.Println("=== VerifyToken Start")
-    /*
-    opt := option.WithCredentialsFile("path_to_your_firebase_credentials.json")
-    app, err := firebase.NewApp(context.Background(), nil, opt)
+    secret, err := utils.LoadEnv("secret")
     if err != nil {
-        log.Fatalf("Error inicializando la app de Firebase: %v", err)
+        return false, err
+    }
+    token, err := jwt.ParseWithClaims(tokenString, &models.Token{}, func(token *jwt.Token) (interface{}, error) {
+        return []byte(secret), nil
+    })
+    if err != nil {
+        return false, err
     }
 
-    client, err := app.Auth(context.Background())
-    if err != nil {
-        return nil, err
+    if _, ok := token.Claims.(*models.Token); ok && token.Valid {
+        return true, nil
     }
 
-    token, err := client.VerifyIDToken(context.Background(), tokenString)
-    if err != nil {
-        return nil, err
-    }
-    */
-    return nil, nil // token, nil
+    return false , fmt.Errorf("Invalid token")
 }
 
 func CreateToken(email string, uidUser string) (string, error) {
     log.Println("=== CreateToken Start")
-    _, error := ValidateUser(email, uidUser)
-    if error != nil {
-        return "TOKEN-GENERATE-AND-SAVE-TO-CHECK-IT", nil
+    isValid, error := ValidateUser(email, uidUser)
+
+    if error != nil  {
+        return "", error
     }
-    return "", error
+    if(isValid == true) {
+        return createToken(uidUser)
+    }
+    return "", nil
+}
+
+func createToken(userId string) (string, error){
+    secret, error := utils.LoadEnv("secret")
+    if error != nil {
+        return "", error   
+    }
+    claims := models.Token {
+        StandardClaims: jwt.StandardClaims{
+         ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),   
+        },
+        UserID: userId,
+        Role: "user",
+    }
+
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+    ss, err := token.SignedString([]byte(secret))
+    if err != nil {
+        return "", err
+    }
+    return ss, nil
 }
