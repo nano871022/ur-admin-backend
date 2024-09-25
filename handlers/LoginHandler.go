@@ -44,10 +44,26 @@ func CheckLogin(request *http.Request) (error){
 }
 
 func CreateLoginHandler(w http.ResponseWriter, r *http.Request) {
+    log.Println("== CreateLoginHandler")
+    if r.Method == http.MethodOptions {
+        w.Header().Set("Access-Control-Allow-Origin", "*")
+        w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT, DELETE")
+        w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+        w.WriteHeader(http.StatusNoContent) // 204 No Content para OPTIONS
+        return
+    }
+
+    EnableCors(&w)
     user := r.FormValue("user")
     uidUser := r.FormValue("uid")
 
+    w.Header().Set("Content-Type", "application/json")
+    w.Header().Set("Access-Control-Allow-Origin", "*")
+    w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+    
+
     token, error := services.CreateToken(user, uidUser)
+
 
     if( error != nil){
         log.Println("Response with error: ", error)

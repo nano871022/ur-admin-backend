@@ -5,6 +5,7 @@ import (
     "encoding/json"
     "ur-admin-backend/models"
     "ur-admin-backend/services"
+    "strings"
 )
 
 func FCMHandler(w http.ResponseWriter, r *http.Request){
@@ -23,7 +24,11 @@ func FCMHandler(w http.ResponseWriter, r *http.Request){
         http.Error(w, "Error enviando mensaje", http.StatusInternalServerError)
         return
     }
-
+    if strings.Contains(response, "enviado") == false {
+        w.WriteHeader(http.StatusInternalServerError)
+        w.Write([]byte("{\"code\":500, \"error\":\"message not sent\"}"))
+        return
+    }
     w.WriteHeader(http.StatusOK)
-    w.Write([]byte("Mensaje enviado con éxito: " + response))
+    w.Write([]byte("{\"code\":200, \"description\":\""+ response+"\"}"))
 }
