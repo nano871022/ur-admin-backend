@@ -2,7 +2,6 @@ package handlers
 
 import (
     "net/http"
-    "encoding/json"
     "ur-admin-backend/services"
     "log"
 )
@@ -13,7 +12,7 @@ func FirebaseDataHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    tokenName := r.URL.Path[len("/firebase-data/"):]
+    tokenName := r.URL.Path[len("/api/firebase-data/"):]
 
     log.Printf("=== FirebaseDataHandler: tokenName: %s", tokenName)
 
@@ -23,5 +22,8 @@ func FirebaseDataHandler(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    json.NewEncoder(w).Encode(data)
+    response := "{\"code\":200,\"value\":\""+data+"\"}"
+
+    w.WriteHeader(http.StatusOK)
+    w.Write([]byte(response))
 }

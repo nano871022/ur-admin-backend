@@ -15,7 +15,7 @@ func main() {
       w.Header().Add("Access-Control-Allow-Origin","*")
       w.Header().Add("Access-Control-Allow-Methods","POST, GET, OPTIONS, PUT, DELETE")
       w.Header().Add("Access-Control-Allow-Headers","Accept, Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, Access-Control-Allow-Origin")
-      w.Write([]byte("{\"code\":200,\"datail\":\"Welcome\"}"))
+      w.Write([]byte("{\"code\":200,\"detail\":\"Welcome\"}"))
     })
     r.HandleFunc("/api/login/validate", handlers.LoginHandler)
     r.HandleFunc("/api/login/create", handlers.CreateLoginHandler)
