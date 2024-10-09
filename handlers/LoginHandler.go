@@ -3,8 +3,10 @@ package handlers
 import (
     "net/http"
     "strings"
+    "encoding/json"
     "log"
     "ur-admin-backend/services"
+    "ur-admin-backend/models"
     "fmt"
 )
 
@@ -54,15 +56,19 @@ func CreateLoginHandler(w http.ResponseWriter, r *http.Request) {
     }
 
     EnableCors(&w)
-    user := r.FormValue("user")
-    uidUser := r.FormValue("uid")
+
+    var msg models.Login
+    if err := json.NewDecoder(r.Body).Decode(&msg); err != nil {
+        http.Error(w, "Bad request", http.StatusBadRequest)
+        return
+    }
 
     w.Header().Set("Content-Type", "application/json")
     w.Header().Set("Access-Control-Allow-Origin", "*")
     w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
     
 
-    token, error := services.CreateToken(user, uidUser)
+    token, error := services.CreateToken(msg.Email, msg.Uid)
 
 
     if( error != nil){

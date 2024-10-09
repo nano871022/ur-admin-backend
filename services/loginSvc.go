@@ -10,7 +10,10 @@ import (
     "time"
     "fmt"
     "ur-admin-backend/utils"
+    "strconv"
 )
+
+var cacheLogin *models.Cache = models.NewCache()
 
 func VerifyToken(tokenString string) (bool, error) {
     log.Println("=== VerifyToken Start")
@@ -50,9 +53,29 @@ func createToken(userId string) (string, error){
     if error != nil {
         return "", error   
     }
+
+    if value, ok := cacheLogin.Get(userId); ok {
+        token := value.(string)
+        log.Println("=== Token from cache")
+        return token, nil
+    }
+
+    var cacheTime int = 10
+
+    cacheValue, err := utils.LoadEnv("CACHE_TIME_TOKEN_LIFE")
+    if err == nil {
+        cacheTemp, error := strconv.Atoi(cacheValue)
+        if error == nil {
+            cacheTime = cacheTemp
+        }
+    }
+            
+    
+
     claims := models.Token {
         StandardClaims: jwt.StandardClaims{
-         ExpiresAt: time.Now().Add(time.Minute * 5).Unix(),   
+            
+         ExpiresAt: time.Now().Add(time.Minute * time.Duration(cacheTime)).Unix(),   
         },
         UserID: userId,
         Role: "user",
@@ -63,5 +86,14 @@ func createToken(userId string) (string, error){
     if err != nil {
         return "", err
     }
+    
+    cacheValue, err = utils.LoadEnv("CACHE_TIME_TOKEN_REFRESH")
+    if err == nil {
+        cacheTime, error := strconv.Atoi(cacheValue)
+        if error == nil {
+            cacheLogin.Set(userId, ss, time.Minute * time.Duration(cacheTime))
+        }
+    }
+
     return ss, nil
 }

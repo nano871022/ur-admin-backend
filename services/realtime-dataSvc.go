@@ -7,7 +7,12 @@ import (
     "log"
     "ur-admin-backend/utils"
     "fmt"
+    "ur-admin-backend/models"
+    "time"
+    "strconv"
 )
+
+var cacheRealtime *models.Cache = models.NewCache()
 
 func GetFirebaseData(tokenName string) (string, error) {
     log.Println("=== GetFirebaseData Start ",tokenName)
@@ -15,11 +20,17 @@ func GetFirebaseData(tokenName string) (string, error) {
    if error != nil {
       return "", error
    }
+
    opt := option.WithCredentialsFile(path)
 
    url, error := utils.LoadEnv("urldbfirebase")
    if error != nil {
         return "", error   
+   }
+
+   if value, ok := cacheRealtime.Get(tokenName); ok {
+    log.Println("=== GetFirebaseData Cache ",tokenName)
+     return value.(string), nil   
    }
 
    app, err := firebase.NewApp(context.Background(), &firebase.Config{
@@ -36,11 +47,17 @@ func GetFirebaseData(tokenName string) (string, error) {
     ref := client.NewRef("/"+tokenName)
     var data string
     if err := ref.Get(context.Background(), &data); err != nil {
-        log.Printf("getting data: /{{"+tokenName+"}} %v\n", err)
         return "", err
     }
 
     if len(data) > 0  {
+        cacheValue, err := utils.LoadEnv("CACHE_TIME_DATA")
+        if(err == nil){
+            cacheTime, error := strconv.Atoi(cacheValue)
+            if error == nil {
+                cacheRealtime.Set(tokenName, data, time.Hour*time.Duration(cacheTime))
+            }
+        }
         return data, nil
     }
     
@@ -58,6 +75,14 @@ func ValidateUser(email string, uuidUser string) (bool, error){
    if error != nil {
         return false, error   
    }
+
+   key := fmt.Sprintf("%s-%s",email,uuidUser)
+
+    if value, ok := cacheRealtime.Get(key); ok {
+    log.Println("=== ValidateUser Cache ",key)
+     return value.(bool) , nil   
+   }
+
    app, err := firebase.NewApp(context.Background(), &firebase.Config{
      DatabaseURL: url,
    }, opt)
@@ -78,9 +103,22 @@ func ValidateUser(email string, uuidUser string) (bool, error){
     for _, element := range data {
         email := element.(map[string]interface {})["email"]
         uidUser := element.(map[string]interface {})["uidUser"]
-        log.Println("email: ",email,"\nuidUser: ",uidUser)
         if email == email && uidUser == uuidUser {
+            cacheValue, err := utils.LoadEnv("CACHE_TIME_USER")
+            if(err == nil){
+                cacheTime, error := strconv.Atoi(cacheValue)
+                if error == nil {
+                    cacheRealtime.Set(key, true, time.Hour*time.Duration(cacheTime))
+                }
+            }
             return true, nil
+        }
+    }
+    cacheValue,err := utils.LoadEnv("CACHE_TIME_USER_FALSE")
+    if(err == nil){
+        cacheTime, error := strconv.Atoi(cacheValue)
+        if error == nil {
+            cacheRealtime.Set(key, false, time.Hour*time.Duration(cacheTime))
         }
     }
     return false , nil
