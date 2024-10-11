@@ -32,7 +32,7 @@ func VerifyToken(tokenString string) (bool, error) {
         return true, nil
     }
 
-    return false , fmt.Errorf("Invalid token")
+    return false , fmt.Errorf("Invalid token ")
 }
 
 func CreateToken(email string, uidUser string) (string, error) {
@@ -42,6 +42,16 @@ func CreateToken(email string, uidUser string) (string, error) {
     if error != nil  {
         return "", error
     }
+
+    if value, ok := cacheLogin.Get(uidUser); ok {
+       isValidCache, errorCache := VerifyToken(value.(string))
+        if errorCache == nil  && isValidCache == true {
+            token := value.(string)
+            log.Println("=== Token from cache")
+            return token, nil
+        }   
+    }
+
     if(isValid == true) {
         return createToken(uidUser)
     }
@@ -52,12 +62,6 @@ func createToken(userId string) (string, error){
     secret, error := utils.LoadEnv("secret")
     if error != nil {
         return "", error   
-    }
-
-    if value, ok := cacheLogin.Get(userId); ok {
-        token := value.(string)
-        log.Println("=== Token from cache")
-        return token, nil
     }
 
     var cacheTime int = 10
