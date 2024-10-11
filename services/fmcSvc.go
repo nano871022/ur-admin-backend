@@ -32,8 +32,8 @@ func SendFCMMessage(msg models.FCMMessage)(string,error){
    // Definir el mensaje a enviar
    message := &messaging.Message{
       Notification: &messaging.Notification{
-         Title: msg.Title,
-         Body:  msg.Body,
+         Title: msg.Notification.Title,
+         Body:  msg.Notification.Body,
       },
       Topic: "allUsers", // Reemplazar con el token del dispositivo al que se enviará la notificación
    }
