@@ -33,3 +33,11 @@ this install golang-go libraries to work and git
 
 ## docker run
 > sudo docker run -d -v $PWD:/project/code -p 8090:8080 --name ur-admin-backend-00001 ur-admin-backend:0.0.001
+
+## App Engine GCLOUD Commands
+
+> gcloud auth login
+> gcloud config set project <project-name>
+> gcloud projects create <project-name> --set-as-default
+> gcloud app create
+> gcloud app deploy
