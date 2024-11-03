@@ -13,9 +13,9 @@ EXPOSE 8080
 RUN touch run.sh
 RUN echo '#!/bin/bash\n\
 credentials=./resources/credentials/credentials.json\n\
-urldbfirebase=https://${name_db_app}-default-rtdb.firebaseio.com/\n\
-secret=${secret}' > .env
+urldbfirebase=https://'${name_db_app}'-default-rtdb.firebaseio.com/\n\
+secret='${secret} > .env
 RUN echo '#!/bin/bash\n\
 cd code\n\
-go run main.go > ..logs/ur_app_manage_backend.log 2>&1 &' > run.sh
+go run main.go > ../logs/ur_app_manage_backend.log 2>&1 &' > run.sh
 CMD ["sh","run.sh"]
