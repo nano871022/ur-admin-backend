@@ -1,43 +1,76 @@
 # ur_admin-backend
-backend project to work with ur-admin-site that is frontend
+Backend project to work with ur-admin-site (frontend).
 
-create hardling from folder with credentials files to /project/code/resources/credentials, this help us with security and dont upload this files in this project
-> ln <folder-credentilas/<firebase-credential>.json credentials.json
+## Migración a Firebase Functions
+Este proyecto ha sido migrado de Google App Engine a Firebase Functions para aprovechar la capa gratuita y mejorar la integración con el ecosistema Firebase.
 
-# Go lang
+### Cambios principales:
+- **Estructura**: Se centralizó el enrutamiento en `handlers/router.go`.
+- **Cloud Entry Point**: Se añadió `function.go` para servir como punto de entrada de la función.
+- **CI/CD**: Se configuraron GitHub Actions para validación automática y despliegue continuo.
+- **Versicionamiento**: Cada despliegue exitoso genera automáticamente un tag de versión en Git.
 
-comands to connect go with firebase Sept 2024
+---
 
-1. create module
-> go mod init <project-name>
-2. install firebase SKD on go
-> go get firebase.google.com/go/v4
-3. create code of project, start point file should be main.go and create another file you needed.
-4. run project
-> go run main.go
+## Despliegue
 
-# Docker file
+### Despliegue Automático (GitHub Actions)
+El despliegue se activa automáticamente cuando se realiza un merge a la rama `main` (despliega al entorno por defecto `production-tss`).
 
-this project containt a docker file to run in container dev on local
-this file run ubuntu V 24.04 updated , and upgrade when it is building
-this install golang-go libraries to work and git 
+### Despliegue Manual y Multi-Proyecto
+Para desplegar a un proyecto específico o cliente desde una lista:
+1. Ve a la pestaña **Actions** en GitHub.
+2. Selecciona el workflow **Deploy to Firebase Functions**.
+3. Haz clic en **Run workflow**.
+4. Selecciona el entorno deseado: `production-tss` o `production-alm181`.
 
-## settings
+#### Configuración de Proyectos (Entornos)
+Para que el despliegue funcione, debes configurar los **GitHub Environments** correspondientes (`production-tss`, `production-alm181`) y añadir los siguientes **Secrets** y **Variables**:
 
-* workdir: /project ## this is for main folder
-* volumen: /code ## in this folde your connect the code of project
-* EXPOSE: 8080 ## this port is about what it'll use to run services
+| Nombre | Tipo | Descripción |
+| --- | --- | --- |
+| `FIREBASE_TOKEN` | Secret | **Contenido completo del JSON** de la cuenta de servicio de GCP/Firebase con permisos de editor/desplegador. |
+| `FIREBASE_PROJECT_ID` | Variable | ID del proyecto de Firebase para ese cliente. |
 
-## docker build 
-> sudo docker build -t ur-admin-backend:0.0.001 .
+> **Nota sobre Seguridad**: Se recomienda crear una cuenta de servicio específica para despliegues con los permisos mínimos necesarios (Firebase Admin, Cloud Functions Admin, etc.) en lugar de usar el token de usuario.
 
-## docker run
-> sudo docker run -d -v $PWD:/project/code -p 8090:8080 --name ur-admin-backend-00001 ur-admin-backend:0.0.001
+### Despliegue Manual (CLI)
+Si deseas realizar el despliegue localmente:
+1. **Instalar Firebase CLI**: `npm install -g firebase-tools`
+2. **Autenticarse**: `firebase login`
+3. **Seleccionar proyecto**: `firebase use <tu-project-id>`
+4. **Desplegar**: `firebase deploy --only functions`
 
-## App Engine GCLOUD Commands
+---
 
-> gcloud auth login
-> gcloud config set project <project-name>
-> gcloud projects create <project-name> --set-as-default
-> gcloud app create
-> gcloud app deploy
+## Conexión desde Angular
+Si tu interfaz está en Angular (desplegada en Firebase Hosting):
+
+### Si están en el mismo proyecto Firebase:
+Configura el archivo `firebase.json` de tu proyecto Angular para redirigir las llamadas:
+```json
+{
+  "hosting": {
+    "rewrites": [
+      {
+        "source": "/api/**",
+        "function": "Handler"
+      }
+    ]
+  }
+}
+```
+En Angular, usa `/api` como base para tus peticiones HTTP.
+
+### Si están en proyectos diferentes:
+Debes usar la URL completa proporcionada por Firebase tras el despliegue:
+`https://<region>-<project-id>.cloudfunctions.net/Handler/api/...`
+
+Asegúrate de que el CORS esté configurado (ya incluido en este backend) para permitir el dominio de tu aplicación Angular.
+
+---
+
+## Desarrollo Local
+- **Ejecutar localmente**: `go run main.go`
+- **Correr pruebas**: `go test ./...`
+- **Compilar**: `go build -o server main.go function.go`

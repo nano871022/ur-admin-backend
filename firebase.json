@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "source": ".",
+    "runtime": "go122",
+    "entryPoint": "Handler"
+  }
+}
