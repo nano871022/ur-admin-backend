@@ -4,11 +4,19 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Selecciona el proyecto/entorno a desplegar'
+        required: true
+        default: 'production'
+        type: environment
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || 'production' }}
     permissions:
       contents: write
     steps:
@@ -38,7 +46,7 @@ jobs:
 
       - name: Create and push tag
         run: |
-          VERSION="v1.0.${{ github.run_number }}"
+          VERSION="v1.0.${{ github.run_number }}-${{ github.event.inputs.environment || 'prod' }}"
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
           git tag $VERSION

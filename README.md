@@ -15,49 +15,32 @@ Este proyecto ha sido migrado de Google App Engine a Firebase Functions para apr
 ## Despliegue
 
 ### Despliegue Automático (GitHub Actions)
-El despliegue se activa automáticamente cuando se realiza un merge a la rama `main`.
+El despliegue se activa automáticamente cuando se realiza un merge a la rama `main` (despliega al entorno por defecto `production`).
 
-#### Variables de Configuración Necesarias:
-Para que el action de despliegue funcione, debes configurar los siguientes secretos y variables en tu repositorio de GitHub (**Settings > Secrets and variables > Actions**):
+### Despliegue Manual y Multi-Proyecto
+Para desplegar a un proyecto específico o cliente desde una lista:
+1. Ve a la pestaña **Actions** en GitHub.
+2. Selecciona el workflow **Deploy to Firebase Functions**.
+3. Haz clic en **Run workflow**.
+4. Selecciona el **entorno/proyecto** de la lista desplegable.
+
+#### Configuración de Proyectos (Entornos)
+Para que aparezcan opciones en la lista y cada una use su propio token y ID de proyecto, debes configurar **GitHub Environments**:
+1. Ve a **Settings > Environments**.
+2. Crea un entorno para cada cliente/proyecto (ej: `cliente-a`, `cliente-b`).
+3. Dentro de cada entorno, añade los siguientes **Secrets** y **Variables**:
 
 | Nombre | Tipo | Descripción |
 | --- | --- | --- |
-| `FIREBASE_TOKEN` | Secret | Token generado mediante `firebase login:ci`. |
-| `FIREBASE_PROJECT_ID` | Variable | ID del proyecto de Firebase (ej: `mi-proyecto-123`). |
-| `GITHUB_TOKEN` | Secret | (Automático) Requerido para la creación de tags. |
+| `FIREBASE_TOKEN` | Secret | Token generado mediante `firebase login:ci` para la cuenta de ese proyecto. |
+| `FIREBASE_PROJECT_ID` | Variable | ID del proyecto de Firebase para ese cliente. |
 
-### Despliegue Manual
-Si deseas realizar el despliegue sin usar los Actions:
-
-1. **Instalar Firebase CLI**:
-   ```bash
-   npm install -g firebase-tools
-   ```
-2. **Autenticarse**:
-   ```bash
-   firebase login
-   ```
-3. **Seleccionar proyecto**:
-   ```bash
-   firebase use <tu-project-id>
-   ```
-4. **Desplegar**:
-   ```bash
-   firebase deploy --only functions
-   ```
-
----
-
-## Guía para Múltiples Clientes/Proyectos
-Para usar este repositorio con diferentes clientes o proyectos:
-
-1. **Parametrización**: Cambia el `FIREBASE_PROJECT_ID` en las variables de GitHub para cada cliente.
-2. **Entornos**: Se recomienda usar **GitHub Environments** para manejar diferentes configuraciones (Dev, Staging, Prod) y sus respectivos tokens.
-3. **Variables de Entorno**: Las variables que antes estaban en `.env` deben configurarse en Firebase:
-   ```bash
-   firebase functions:config:set service.key="valor"
-   ```
-   O usando Secret Manager si son datos sensibles.
+### Despliegue Manual (CLI)
+Si deseas realizar el despliegue localmente:
+1. **Instalar Firebase CLI**: `npm install -g firebase-tools`
+2. **Autenticarse**: `firebase login`
+3. **Seleccionar proyecto**: `firebase use <tu-project-id>`
+4. **Desplegar**: `firebase deploy --only functions`
 
 ---
 
@@ -89,14 +72,6 @@ Asegúrate de que el CORS esté configurado (ya incluido en este backend) para p
 ---
 
 ## Desarrollo Local
-
-### Comandos Go
 - **Ejecutar localmente**: `go run main.go`
 - **Correr pruebas**: `go test ./...`
 - **Compilar**: `go build -o server main.go function.go`
-
-### Docker (Opcional)
-```bash
-docker build -t ur-admin-backend .
-docker run -p 8080:8080 ur-admin-backend
-```
