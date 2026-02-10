@@ -14,8 +14,9 @@ This project is a Go backend migrated from Google App Engine to Firebase Functio
 
 - **CI (`ci.yml`)**: Runs on every push and pull request to `main`. It executes `go test ./...` and `go build ./...`.
 - **CD (`deploy.yml`)**: Supports both automatic and manual deployment.
-    - **Automatic**: Merges to `main` deploy to the `production` environment.
-    - **Manual**: Use `workflow_dispatch` to select a specific GitHub Environment (e.g., different clients).
+    - **Authentication**: Uses a **Service Account JSON key** stored in the `FIREBASE_TOKEN` secret.
+    - **Automatic**: Merges to `main` deploy to the `production-tss` environment.
+    - **Manual**: Use `workflow_dispatch` to select a specific environment (`production-tss`, `production-alm181`).
     - **Tagging**: After a successful deployment, it creates a tag with the format `v1.0.RUN_NUMBER-ENV`.
 
 ## Best Practices
@@ -23,4 +24,4 @@ This project is a Go backend migrated from Google App Engine to Firebase Functio
 - When adding new routes, add them to `handlers/router.go`.
 - Keep business logic in the `services/` package.
 - Ensure all new handlers have corresponding tests in `handlers/handlers_test.go`.
-- To support new clients, instruct the user to create a new GitHub Environment with its own `FIREBASE_TOKEN` and `FIREBASE_PROJECT_ID`.
+- To support new clients, instruct the user to create a new GitHub Environment with its own `FIREBASE_TOKEN` (Service Account JSON) and `FIREBASE_PROJECT_ID`.

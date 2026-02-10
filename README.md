@@ -25,15 +25,14 @@ Para desplegar a un proyecto específico o cliente desde una lista:
 4. Selecciona el entorno deseado: `production-tss` o `production-alm181`.
 
 #### Configuración de Proyectos (Entornos)
-Para que el despliegue funcione, debes configurar los **GitHub Environments** correspondientes:
-1. Ve a **Settings > Environments**.
-2. Crea los entornos: `production-tss` y `production-alm181`.
-3. Dentro de cada entorno, añade los siguientes **Secrets** y **Variables**:
+Para que el despliegue funcione, debes configurar los **GitHub Environments** correspondientes (`production-tss`, `production-alm181`) y añadir los siguientes **Secrets** y **Variables**:
 
 | Nombre | Tipo | Descripción |
 | --- | --- | --- |
-| `FIREBASE_TOKEN` | Secret | Token generado mediante `firebase login:ci` para la cuenta de ese proyecto. |
+| `FIREBASE_TOKEN` | Secret | **Contenido completo del JSON** de la cuenta de servicio de GCP/Firebase con permisos de editor/desplegador. |
 | `FIREBASE_PROJECT_ID` | Variable | ID del proyecto de Firebase para ese cliente. |
+
+> **Nota sobre Seguridad**: Se recomienda crear una cuenta de servicio específica para despliegues con los permisos mínimos necesarios (Firebase Admin, Cloud Functions Admin, etc.) en lugar de usar el token de usuario.
 
 ### Despliegue Manual (CLI)
 Si deseas realizar el despliegue localmente:

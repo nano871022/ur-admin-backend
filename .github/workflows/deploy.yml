@@ -36,16 +36,23 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
+      - name: Authenticate with Service Account
+        run: |
+          echo '${{ secrets.FIREBASE_TOKEN }}' > service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
+
       - name: Deploy to Firebase
-        env:
-          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         run: |
           PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
           if [ -n "$PROJECT_ID" ]; then
-            firebase deploy --only functions --project "$PROJECT_ID" --non-interactive --token "$FIREBASE_TOKEN"
+            firebase deploy --only functions --project "$PROJECT_ID" --non-interactive
           else
-            firebase deploy --only functions --non-interactive --token "$FIREBASE_TOKEN"
+            firebase deploy --only functions --non-interactive
           fi
+
+      - name: Cleanup Service Account File
+        if: always()
+        run: rm -f service-account.json
 
       - name: Create and push tag
         run: |
