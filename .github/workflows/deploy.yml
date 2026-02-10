@@ -9,14 +9,17 @@ on:
       environment:
         description: 'Selecciona el proyecto/entorno a desplegar'
         required: true
-        default: 'production'
-        type: environment
+        default: 'production-tss'
+        type: choice
+        options:
+          - production-tss
+          - production-alm181
 
 jobs:
   deploy:
     name: Deploy
     runs-on: ubuntu-latest
-    environment: ${{ github.event.inputs.environment || 'production' }}
+    environment: ${{ github.event.inputs.environment || 'production-tss' }}
     permissions:
       contents: write
     steps:

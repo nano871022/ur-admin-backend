@@ -15,19 +15,19 @@ Este proyecto ha sido migrado de Google App Engine a Firebase Functions para apr
 ## Despliegue
 
 ### Despliegue Automático (GitHub Actions)
-El despliegue se activa automáticamente cuando se realiza un merge a la rama `main` (despliega al entorno por defecto `production`).
+El despliegue se activa automáticamente cuando se realiza un merge a la rama `main` (despliega al entorno por defecto `production-tss`).
 
 ### Despliegue Manual y Multi-Proyecto
 Para desplegar a un proyecto específico o cliente desde una lista:
 1. Ve a la pestaña **Actions** en GitHub.
 2. Selecciona el workflow **Deploy to Firebase Functions**.
 3. Haz clic en **Run workflow**.
-4. Selecciona el **entorno/proyecto** de la lista desplegable.
+4. Selecciona el entorno deseado: `production-tss` o `production-alm181`.
 
 #### Configuración de Proyectos (Entornos)
-Para que aparezcan opciones en la lista y cada una use su propio token y ID de proyecto, debes configurar **GitHub Environments**:
+Para que el despliegue funcione, debes configurar los **GitHub Environments** correspondientes:
 1. Ve a **Settings > Environments**.
-2. Crea un entorno para cada cliente/proyecto (ej: `cliente-a`, `cliente-b`).
+2. Crea los entornos: `production-tss` y `production-alm181`.
 3. Dentro de cada entorno, añade los siguientes **Secrets** y **Variables**:
 
 | Nombre | Tipo | Descripción |
