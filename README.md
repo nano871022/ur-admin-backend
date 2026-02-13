@@ -1,13 +1,15 @@
 # ur_admin-backend
 Backend project to work with ur-admin-site (frontend).
 
-## Migración a Firebase Functions
-Este proyecto ha sido migrado de Google App Engine a Firebase Functions para aprovechar la capa gratuita y mejorar la integración con el ecosistema Firebase.
+## Migración a Node.js y Firebase Functions
+Este proyecto ha sido migrado de Go a Node.js (Express) sobre Firebase Functions para aprovechar la capa gratuita y mejorar la integración con el ecosistema Firebase.
 
 ### Cambios principales:
-- **Estructura**: Se centralizó el enrutamiento en `handlers/router.go`.
-- **Cloud Entry Point**: Se añadió `function.go` para servir como punto de entrada de la función.
-- **CI/CD**: Se configuraron GitHub Actions para validación automática y despliegue continuo.
+- **Tecnología**: Migración completa de Go 1.22 a Node.js 20.
+- **Framework**: Uso de Express para el manejo de rutas y middlewares.
+- **Estructura**: Se centralizó el enrutamiento en `handlers/router.js`.
+- **Cloud Entry Point**: `index.js` sirve como punto de entrada de la función.
+- **CI/CD**: Se actualizaron los GitHub Actions para usar Node.js y npm.
 - **Versicionamiento**: Cada despliegue exitoso genera automáticamente un tag de versión en Git.
 
 ---
@@ -39,7 +41,7 @@ Si deseas realizar el despliegue localmente:
 1. **Instalar Firebase CLI**: `npm install -g firebase-tools`
 2. **Autenticarse**: `firebase login`
 3. **Seleccionar proyecto**: `firebase use <tu-project-id>`
-4. **Desplegar**: `firebase deploy --only functions`
+4. **Desplegar**: `npm run deploy`
 
 ---
 
@@ -71,6 +73,6 @@ Asegúrate de que el CORS esté configurado (ya incluido en este backend) para p
 ---
 
 ## Desarrollo Local
-- **Ejecutar localmente**: `go run main.go`
-- **Correr pruebas**: `go test ./...`
-- **Compilar**: `go build -o server main.go function.go`
+- **Instalar dependencias**: `npm install`
+- **Ejecutar localmente**: `npm start` o `npm run dev`
+- **Correr pruebas**: `npm test`
