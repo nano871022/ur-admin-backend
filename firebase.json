@@ -1,7 +1,7 @@
 {
   "functions": {
     "source": ".",
-    "runtime": "go122",
+    "runtime": "nodejs20",
     "entryPoint": "Handler"
   }
 }
