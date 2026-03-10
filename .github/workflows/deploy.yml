@@ -45,6 +45,11 @@ jobs:
           echo '${{ secrets.FIREBASE_TOKEN }}' > service-account.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
 
+      - name: Create environment file
+        run: echo "secret=$APP_SECRET" > .env
+        env:
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+
       - name: Deploy to Firebase
         run: |
           PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
