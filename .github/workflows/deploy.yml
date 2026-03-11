@@ -27,6 +27,7 @@ jobs:
     secrets:
       FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
       APP_SECRET: ${{ secrets.APP_SECRET }}
+      PROPERTIES_REPO_TOKEN: ${{ secrets.PROPERTIES_REPO_TOKEN }}
 
   tag:
     needs: deploy
