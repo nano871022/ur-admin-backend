@@ -37,7 +37,7 @@ jobs:
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
 
       - name: Create environment file
-        run: echo "APP_SECRET=$APP_SECRET" > .env
+        run: echo "SECRET=$APP_SECRET" > .env
         env:
           APP_SECRET: ${{ secrets.APP_SECRET }}
 
