@@ -1,0 +1,55 @@
+name: Deploy Task
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+    secrets:
+      FIREBASE_TOKEN:
+        required: true
+      APP_SECRET:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Authenticate with Service Account
+        run: |
+          echo '${{ secrets.FIREBASE_TOKEN }}' > service-account.json
+          echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
+
+      - name: Create environment file
+        run: echo "APP_SECRET=$APP_SECRET" > .env
+        env:
+          APP_SECRET: ${{ secrets.APP_SECRET }}
+
+      - name: Deploy to Firebase
+        run: |
+          PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
+          if [ -n "$PROJECT_ID" ]; then
+            firebase deploy --only functions --project "$PROJECT_ID" --non-interactive --force
+          else
+            firebase deploy --only functions --non-interactive --force
+          fi
+
+      - name: Cleanup Service Account File
+        if: always()
+        run: rm -f service-account.json

@@ -1,0 +1,32 @@
+name: Build Task
+
+on:
+  workflow_call:
+    outputs:
+      artifact-name:
+        description: "The name of the uploaded artifact"
+        value: "build-artifact"
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: .
+          include-hidden-files: true

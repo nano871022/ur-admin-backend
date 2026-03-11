@@ -8,7 +8,7 @@ const cacheLogin = new Cache();
 async function verifyToken(tokenString) {
   console.log("=== VerifyToken Start");
   try {
-    const secret = loadEnv('secret');
+    const secret = loadEnv('APP_SECRET');
     const decoded = jwt.verify(tokenString, secret);
     return !!decoded;
   } catch (err) {
@@ -36,7 +36,7 @@ async function createToken(email, uidUser) {
 }
 
 async function generateAndCacheToken(userId) {
-  const secret = loadEnv('secret');
+  const secret = loadEnv('APP_SECRET');
 
   let lifeTimeMinutes = 10;
   try {
