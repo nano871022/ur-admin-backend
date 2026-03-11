@@ -11,6 +11,8 @@ on:
         required: true
       APP_SECRET:
         required: true
+      PROPERTIES_REPO_TOKEN:
+        required: true
 
 jobs:
   deploy:
@@ -36,10 +38,20 @@ jobs:
           echo '${{ secrets.FIREBASE_TOKEN }}' > service-account.json
           echo "GOOGLE_APPLICATION_CREDENTIALS=${{ github.workspace }}/service-account.json" >> $GITHUB_ENV
 
-      - name: Create environment file
-        run: echo "secret=$APP_SECRET" > .env
-        env:
-          APP_SECRET: ${{ secrets.APP_SECRET }}
+      - name: Checkout properties repo
+        uses: actions/checkout@v4
+        with:
+          repository: nano871022/japl-properties
+          token: ${{ secrets.PROPERTIES_REPO_TOKEN }}
+          path: japl-properties
+          sparse-checkout: |
+            ur-admin-backend/.env
+          sparse-checkout-cone-mode: false
+
+      - name: Setup environment file
+        run: |
+          mv japl-properties/ur-admin-backend/.env .env
+          rm -rf japl-properties
 
       - name: Set execute permission for firebase-functions
         run: chmod +x node_modules/.bin/firebase-functions
