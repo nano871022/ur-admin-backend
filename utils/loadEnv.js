@@ -10,7 +10,14 @@ dotenv.config();
  * @throws {Error} - If the environment variable is not set.
  */
 function loadEnv(key) {
-  const value = process.env[key];
+  let value = process.env[key];
+
+  // If the original key is not found, try the uppercase version
+  if (value === undefined || value === '') {
+    const upperKey = key.toUpperCase();
+    value = process.env[upperKey];
+  }
+
   if (value === undefined || value === '') {
     throw new Error(`Environment variable ${key} not set`);
   }
