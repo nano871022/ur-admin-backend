@@ -41,6 +41,9 @@ jobs:
         env:
           APP_SECRET: ${{ secrets.APP_SECRET }}
 
+      - name: Set execute permission for firebase-functions
+        run: chmod +x node_modules/.bin/firebase-functions
+
       - name: Deploy to Firebase
         run: |
           PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
