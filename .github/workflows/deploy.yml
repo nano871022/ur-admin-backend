@@ -31,5 +31,7 @@ jobs:
   tag:
     needs: deploy
     uses: ./.github/workflows/tag.yml
+    permissions:
+     contents: write
     with:
       environment: ${{ github.event.inputs.environment || 'prod' }}
