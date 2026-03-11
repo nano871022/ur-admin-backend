@@ -48,9 +48,9 @@ jobs:
         run: |
           PROJECT_ID=${{ vars.FIREBASE_PROJECT_ID }}
           if [ -n "$PROJECT_ID" ]; then
-            firebase deploy --only functions --project "$PROJECT_ID" --non-interactive --force --debug
+            firebase deploy --only functions --project "$PROJECT_ID" --non-interactive --force
           else
-            firebase deploy --only functions --non-interactive --force --debug
+            firebase deploy --only functions --non-interactive --force
           fi
 
       - name: Cleanup Service Account File
