@@ -4,6 +4,7 @@ const { loginHandler, createLoginHandler } = require('./loginHandler');
 const { fcmHandler } = require('./fcmHandler');
 const { healthHandler } = require('./healthHandler');
 const { firebaseDataHandler } = require('./firebaseDatabaseHandler');
+const { activeUserStatsHandler } = require('./bigqueryHandler');
 
 function newRouter() {
   const router = express.Router();
@@ -20,6 +21,7 @@ function newRouter() {
   router.post('/api/send-fcm', fcmHandler);
   router.get('/api/health', healthHandler);
   router.get('/api/firebase-data/:tokenName', firebaseDataHandler);
+  router.get('/api/stats/active-users', activeUserStatsHandler);
 
   return router;
 }
