@@ -1,0 +1,7 @@
+SELECT
+    COUNT(DISTINCT user_id) as active_users,
+    DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK) as reference_date
+FROM
+    `__TABLE_NAME__`
+WHERE
+    _PARTITIONDATE = DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK)
