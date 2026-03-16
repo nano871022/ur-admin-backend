@@ -1,11 +1,13 @@
 class ActiveUserStats {
     /**
      * @param {number} activeUsers
-     * @param {string} referenceDate
+     * @param {string} startDate
+     * @param {string} endDate
      */
-    constructor(activeUsers, referenceDate) {
+    constructor(activeUsers, startDt,endDt) {
         this.activeUsers = activeUsers;
-        this.referenceDate = referenceDate;
+        this.startDate = startDt;
+        this.endDate = endDt;
     }
 
     /**
@@ -16,7 +18,8 @@ class ActiveUserStats {
     static fromBigQuery(row) {
         return new ActiveUserStats(
             row.active_users || 0,
-            row.reference_date ? row.reference_date.value : null
+            row.start_dt ? row.start_dt.value : null,
+            row.end_dt ? row.end_dt.value : null
         );
     }
 }
