@@ -12,7 +12,7 @@ app.use(newRouter());
 
 describe('GET /api/stats/active-users', () => {
     it('should return 200 and active user stats', async () => {
-        const mockStats = new ActiveUserStats(150, '2023-10-01');
+        const mockStats = new ActiveUserStats(150, '20231001','20231201');
         getActiveUserStats.mockResolvedValue(mockStats);
 
         const res = await request(app).get('/api/stats/active-users');
