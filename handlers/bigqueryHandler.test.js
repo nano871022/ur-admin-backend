@@ -21,7 +21,8 @@ describe('GET /api/stats/active-users', () => {
         expect(res.body.code).toEqual(200);
         expect(res.body.data).toEqual({
             activeUsers: 150,
-            referenceDate: '2023-10-01'
+            startDate: '20231001',
+            endDate: '20231201'
         });
     });
 
