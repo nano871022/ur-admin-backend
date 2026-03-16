@@ -29,6 +29,9 @@ async function getActiveUserStats(deps = {}) {
     const sqlPath = path.join(process.cwd(), 'resources/sql/active_users_prev_week.sql');
     let query = (deps.fs || fs).readFileSync(sqlPath, 'utf8');
 
+    const tableName = (deps.loadEnv || loadEnv)('NUM_USERS_TABLE');
+    query = query.replace('__TABLE_NAME__', tableName);
+
     const options = {
         query: query,
         location: 'us-central1', // Adjust location if necessary
