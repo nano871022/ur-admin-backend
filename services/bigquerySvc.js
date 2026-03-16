@@ -31,7 +31,7 @@ async function getActiveUserStats(deps = {}) {
 
     const options = {
         query: query,
-        location: 'US', // Adjust location if necessary
+        location: 'us-central1', // Adjust location if necessary
     };
 
     const [rows] = await bq.query(options);
