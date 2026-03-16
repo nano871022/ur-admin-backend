@@ -12,7 +12,7 @@ let bqClient;
 function getBigQueryClient() {
     if (!bqClient) {
         const credentialsPath = loadEnv('credentials');
-        const projectId = loadEnv('FIREBASE_PROJECT_ID');
+        const projectId = loadEnv('FB_PROJECT_ID');
 
         const absolutePath = path.isAbsolute(credentialsPath)
             ? credentialsPath
