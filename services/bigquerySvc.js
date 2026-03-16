@@ -32,9 +32,11 @@ async function getActiveUserStats(deps = {}) {
     const tableName = (deps.loadEnv || loadEnv)('NUM_USERS_TABLE');
     query = query.replace('__TABLE_NAME__', tableName);
 
+    const location_table = (deps.loadEnv || loadEnv)('NUM_USERS_TABLE_LOCATION');
+
     const options = {
         query: query,
-        location: 'us-central1', // Adjust location if necessary
+        location: location_table, // Adjust location if necessary
     };
 
     const [rows] = await bq.query(options);
