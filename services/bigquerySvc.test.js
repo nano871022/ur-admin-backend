@@ -21,7 +21,8 @@ describe('getActiveUserStats', () => {
     it('should fetch data from BigQuery when cache is empty', async () => {
         const mockRows = [{
             active_users: 100,
-            reference_date: { value: '2023-10-01' }
+            start_dt: { value: '20231001' },
+            end_dt: { value: '20231201' }
         }];
         mockBqClient.query.mockResolvedValue([mockRows]);
 
@@ -32,7 +33,8 @@ describe('getActiveUserStats', () => {
         });
 
         expect(stats.activeUsers).toBe(100);
-        expect(stats.referenceDate).toBe('2023-10-01');
+        expect(stats.startDate).toBe('20231001');
+        expect(stats.endDate).toBe('20231201');
         expect(mockBqClient.query).toHaveBeenCalledWith(expect.objectContaining({
             query: 'SELECT * FROM `test_project.test_dataset.test_table`'
         }));
