@@ -14,7 +14,7 @@ describe('getActiveUserStats', () => {
         jest.resetModules();
         getActiveUserStatsLocal = require('./bigquerySvc').getActiveUserStats;
         jest.clearAllMocks();
-        mockFs.readFileSync.mockReturnValue('SELECT * FROM `__TABLE_NAME__`');
+        mockFs.readFileSync.mockReturnValue('SELECT * FROM `test_project.test_dataset.test_table`');
         mockLoadEnv.mockReturnValue('test_project.test_dataset.test_table');
     });
 
