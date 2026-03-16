@@ -54,6 +54,8 @@ jobs:
       - name: Setup environment file
         run: |
           ENV_PATH=$(echo "${{ vars.PATH_ENV }}" | sed 's|^\./||')
+          ls japl-properties
+          cat "japl-properties/$ENV_PATH"
           mv "japl-properties/$ENV_PATH" .env
           rm -rf japl-properties
 
