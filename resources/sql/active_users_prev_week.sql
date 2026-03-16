@@ -1,7 +1,7 @@
 SELECT
-    COUNT(DISTINCT user_id) as active_users,
+    COUNT(DISTINCT user_pseudo_id) as active_users,
     DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK) as reference_date
 FROM
-    `__TABLE_NAME__`
+    `torressansebastian.analytics_437683494.events_*`
 WHERE
-    _PARTITIONDATE = DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK)
+    _TABLE_SUFFIX  BETWEEN FORMAT_DATE("%Y%m%d",DATE_SUB(CURRENT_DATE(), INTERVAL 1 WEEK)) AND FORMAT_DATE("%Y%m%d",CURRENT_DATE())
