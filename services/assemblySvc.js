@@ -1,6 +1,35 @@
 const admin = require('firebase-admin');
 
 /**
+ * Retrieves assembly attendance metrics from Firestore.
+ * Queries the 'assemblies' collection for an active assembly.
+ * @returns {Promise<{attendanceCount: number, totalUnits: number}>}
+ */
+async function getAttendeesMetrics() {
+  const db = admin.firestore();
+  const assembliesRef = db.collection('assemblies');
+
+  // Query for the active assembly
+  const activeAssemblies = await assembliesRef.where('status', '==', 'ACTIVE').limit(1).get();
+
+  if (activeAssemblies.empty) {
+    console.log('No active assembly found in Firestore');
+    return {
+      attendanceCount: 0,
+      totalUnits: 0
+    };
+  }
+
+  const assemblyDoc = activeAssemblies.docs[0];
+  const data = assemblyDoc.data();
+
+  return {
+    attendanceCount: data.attendanceCount || 0,
+    totalUnits: data.totalUnits || 0
+  };
+}
+
+/**
  * Fetches all surveys from Firestore and maps them to the Survey interface.
  * @returns {Promise<Array>} Array of surveys.
  */
@@ -38,4 +67,49 @@ async function getAllSurveys() {
   return surveys;
 }
 
-module.exports = { getAllSurveys };
+/**
+ * Retrieves real-time quorum and coefficient metrics.
+ */
+async function getCoefficientData() {
+  const db = admin.firestore();
+
+  // Query attendees who are present
+  const attendeesSnapshot = await db.collection('attendees').where('present', '==', true).get();
+
+  let coefficientSum = 0;
+  attendeesSnapshot.forEach(doc => {
+    const data = doc.data();
+    if (data.coefficient) {
+      coefficientSum += data.coefficient;
+    }
+  });
+
+  // Round to 2 decimal places
+  const coefficientPercentage = Math.round(coefficientSum * 100) / 100;
+
+  // Fetch minRequiredPercentage from assemblies collection
+  let minRequiredPercentage = 50.0;
+  try {
+    const assemblyDoc = await db.collection('assemblies').doc('active').get();
+    if (assemblyDoc.exists) {
+      const assemblyData = assemblyDoc.data();
+      if (assemblyData.minRequiredPercentage !== undefined) {
+        minRequiredPercentage = assemblyData.minRequiredPercentage;
+      }
+    }
+  } catch (error) {
+    console.error('Error fetching assembly config:', error);
+  }
+
+  return {
+    coefficientPercentage: coefficientPercentage,
+    quorumPercentage: coefficientPercentage,
+    minRequiredPercentage: minRequiredPercentage
+  };
+}
+
+module.exports = {
+  getAttendeesMetrics,
+  getAllSurveys,
+  getCoefficientData
+};
