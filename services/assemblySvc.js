@@ -1,5 +1,10 @@
 const admin = require('firebase-admin');
 
+admin.initializeApp({
+  projectId: 'torressansebastian',
+  databaseId: 'firestore-assembly'
+});
+
 /**
  * Maps a Firestore survey document to the Survey interface.
  * @param {Object} doc Firestore DocumentSnapshot.
@@ -35,7 +40,7 @@ function mapSurveyDoc(doc) {
  * @returns {Promise<{attendanceCount: number, totalUnits: number}>}
  */
 async function getAttendeesMetrics() {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
   const assembliesRef = db.collection('assemblies');
 
   // Query for the active assembly
@@ -63,7 +68,7 @@ async function getAttendeesMetrics() {
  * @returns {Promise<Array>} Array of surveys.
  */
 async function getAllSurveys() {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
   const surveysSnapshot = await db.collection('surveys').get();
 
   const surveys = [];
@@ -97,7 +102,7 @@ async function getSurveyById(id) {
  * @returns {Promise<Object>} The created survey metadata.
  */
 async function createSurvey(question, options) {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
 
   const newSurveyData = {
     question: question,
@@ -129,7 +134,7 @@ async function createSurvey(question, options) {
  * Retrieves real-time quorum and coefficient metrics.
  */
 async function getCoefficientData() {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
 
   // Query attendees who are present
   const attendeesSnapshot = await db.collection('attendees').where('present', '==', true).get();
@@ -174,7 +179,7 @@ async function getCoefficientData() {
  * @returns {Promise<Object|null>} The updated survey object or null if not found.
  */
 async function restartSurvey(id) {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
   const docRef = db.collection('surveys').doc(id);
   const doc = await docRef.get();
 
@@ -211,7 +216,7 @@ async function restartSurvey(id) {
  * @returns {Promise<Object|null>} The updated survey object or null if not found.
  */
 async function closeSurvey(id) {
-  const db = admin.firestore('firestore-assembly');
+  const db = admin.firestore();
   const docRef = db.collection('surveys').doc(id);
   const doc = await docRef.get();
 
