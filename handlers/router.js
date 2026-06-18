@@ -5,7 +5,13 @@ const { fcmHandler } = require('./fcmHandler');
 const { healthHandler } = require('./healthHandler');
 const { firebaseDataHandler } = require('./firebaseDatabaseHandler');
 const { activeUserStatsHandler } = require('./bigqueryHandler');
-const assemblyHandler = require('./assemblyHandler');
+const {
+  getAttendeesHandler,
+  getAllSurveysHandler,
+  getCoefficientHandler,
+  createSurveyHandler
+} = require('./assemblyHandler');
+
 
 function newRouter() {
   const router = express.Router();
@@ -23,7 +29,12 @@ function newRouter() {
   router.get('/api/health', healthHandler);
   router.get('/api/firebase-data/:tokenName', firebaseDataHandler);
   router.get('/api/stats/active-users', activeUserStatsHandler);
-  router.get('/api/assembly/coefficient', assemblyHandler.getCoefficient);
+  
+  // Assembly endpoints
+  router.put('/api/assembly/create', createSurveyHandler);
+  router.get('/api/assembly/all', getAllSurveysHandler);
+  router.get('/api/assembly/attendees', getAttendeesHandler);
+  router.get('/api/assembly/coefficient', getCoefficientHandler);
 
   return router;
 }
