@@ -168,10 +168,48 @@ async function getCoefficientData() {
   };
 }
 
+/**
+ * Restarts a survey by resetting its status and clearing all votes and statistics.
+ * @param {string} id The survey ID.
+ * @returns {Promise<Object|null>} The updated survey object or null if not found.
+ */
+async function restartSurvey(id) {
+  const db = admin.firestore();
+  const docRef = db.collection('surveys').doc(id);
+  const doc = await docRef.get();
+
+  if (!doc.exists) {
+    return null;
+  }
+
+  const data = doc.data();
+  const resetOptions = (data.options || []).map(opt => {
+    const newOpt = { ...opt };
+    if (newOpt.votes !== undefined) newOpt.votes = 0;
+    if (newOpt.votesCount !== undefined) newOpt.votesCount = 0;
+    newOpt.coefficientVotes = 0;
+    return newOpt;
+  });
+
+  const updateData = {
+    status: 'OPEN',
+    options: resetOptions,
+    mostVotedOption: admin.firestore.FieldValue.delete(),
+    mostVotedVotes: admin.firestore.FieldValue.delete(),
+    mostVotedCoefficient: admin.firestore.FieldValue.delete()
+  };
+
+  await docRef.update(updateData);
+
+  const updatedDoc = await docRef.get();
+  return mapSurveyDoc(updatedDoc);
+}
+
 module.exports = {
   getAttendeesMetrics,
   getAllSurveys,
   getSurveyById,
   getCoefficientData,
-  createSurvey
+  createSurvey,
+  restartSurvey
 };
