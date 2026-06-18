@@ -1,20 +1,22 @@
 const request = require('supertest');
 const express = require('express');
-const { getAttendeesHandler } = require('./assemblyHandler');
+const { getAttendeesHandler, getAllSurveysHandler } = require('./assemblyHandler');
 const { checkLogin } = require('./loginHandler');
-const { getAttendeesMetrics } = require('../services/assemblySvc');
+const { getAttendeesMetrics, getAllSurveys } = require('../services/assemblySvc');
 
 // Mock dependencies
 jest.mock('./loginHandler', () => ({
   checkLogin: jest.fn()
 }));
 jest.mock('../services/assemblySvc', () => ({
-  getAttendeesMetrics: jest.fn()
+  getAttendeesMetrics: jest.fn(),
+  getAllSurveys: jest.fn()
 }));
 
 const app = express();
 app.use(express.json());
 app.get('/api/assembly/attendees', getAttendeesHandler);
+app.get('/api/assembly/all', getAllSurveysHandler);
 
 describe('GET /api/assembly/attendees', () => {
   beforeEach(() => {
@@ -53,6 +55,51 @@ describe('GET /api/assembly/attendees', () => {
 
     const res = await request(app)
       .get('/api/assembly/attendees')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Application', 'ur-admin-site');
+
+    expect(res.statusCode).toEqual(500);
+    expect(res.body).toEqual({ code: '500', error: 'Firestore error' });
+  });
+});
+
+describe('GET /api/assembly/all', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should return 200 and list of surveys when authenticated', async () => {
+    const mockSurveys = [
+      {
+        id: 'survey1',
+        question: 'Question 1',
+        status: 'OPEN',
+        createdAt: '2026-06-18T10:00:00.000Z',
+        options: [
+          { text: 'Option 1', votesCount: 1, coefficientVotes: 0.5 }
+        ]
+      }
+    ];
+    checkLogin.mockResolvedValue(true);
+    getAllSurveys.mockResolvedValue(mockSurveys);
+
+    const res = await request(app)
+      .get('/api/assembly/all')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Application', 'ur-admin-site');
+
+    expect(res.statusCode).toEqual(200);
+    expect(res.body).toEqual(mockSurveys);
+    expect(checkLogin).toHaveBeenCalled();
+    expect(getAllSurveys).toHaveBeenCalled();
+  });
+
+  it('should return 500 when service fails', async () => {
+    checkLogin.mockResolvedValue(true);
+    getAllSurveys.mockRejectedValue(new Error('Firestore error'));
+
+    const res = await request(app)
+      .get('/api/assembly/all')
       .set('Authorization', 'Bearer valid-token')
       .set('Application', 'ur-admin-site');
 
