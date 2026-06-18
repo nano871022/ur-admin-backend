@@ -1,9 +1,4 @@
-const admin = require('firebase-admin');
-
-admin.initializeApp({
-  projectId: 'torressansebastian',
-  databaseId: 'firestore-assembly'
-});
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
 
 /**
  * Maps a Firestore survey document to the Survey interface.
@@ -40,7 +35,7 @@ function mapSurveyDoc(doc) {
  * @returns {Promise<{attendanceCount: number, totalUnits: number}>}
  */
 async function getAttendeesMetrics() {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
   const assembliesRef = db.collection('assemblies');
 
   // Query for the active assembly
@@ -68,7 +63,7 @@ async function getAttendeesMetrics() {
  * @returns {Promise<Array>} Array of surveys.
  */
 async function getAllSurveys() {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
   const surveysSnapshot = await db.collection('surveys').get();
 
   const surveys = [];
@@ -85,7 +80,7 @@ async function getAllSurveys() {
  * @returns {Promise<Object|null>} The survey object or null if not found.
  */
 async function getSurveyById(id) {
-  const db = admin.firestore('firestore-assembly');
+  const db = getFirestore('firestore-assembly');
   const doc = await db.collection('surveys').doc(id).get();
 
   if (!doc.exists) {
@@ -102,12 +97,12 @@ async function getSurveyById(id) {
  * @returns {Promise<Object>} The created survey metadata.
  */
 async function createSurvey(question, options) {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
 
   const newSurveyData = {
     question: question,
     status: 'OPEN',
-    createDate: admin.firestore.FieldValue.serverTimestamp(),
+    createDate: FieldValue.serverTimestamp(),
     timeUsed: "0",
     options: options.map(opt => ({
       value: opt.value || '',
@@ -134,7 +129,7 @@ async function createSurvey(question, options) {
  * Retrieves real-time quorum and coefficient metrics.
  */
 async function getCoefficientData() {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
 
   // Query attendees who are present
   const attendeesSnapshot = await db.collection('attendees').where('present', '==', true).get();
@@ -179,7 +174,7 @@ async function getCoefficientData() {
  * @returns {Promise<Object|null>} The updated survey object or null if not found.
  */
 async function restartSurvey(id) {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
   const docRef = db.collection('surveys').doc(id);
   const doc = await docRef.get();
 
@@ -199,9 +194,9 @@ async function restartSurvey(id) {
   const updateData = {
     status: 'OPEN',
     options: resetOptions,
-    mostVotedOption: admin.firestore.FieldValue.delete(),
-    mostVotedVotes: admin.firestore.FieldValue.delete(),
-    mostVotedCoefficient: admin.firestore.FieldValue.delete()
+    mostVotedOption: FieldValue.delete(),
+    mostVotedVotes: FieldValue.delete(),
+    mostVotedCoefficient: FieldValue.delete()
   };
 
   await docRef.update(updateData);
@@ -216,7 +211,7 @@ async function restartSurvey(id) {
  * @returns {Promise<Object|null>} The updated survey object or null if not found.
  */
 async function closeSurvey(id) {
-  const db = admin.firestore();
+  const db = getFirestore('firestore-assembly');
   const docRef = db.collection('surveys').doc(id);
   const doc = await docRef.get();
 
