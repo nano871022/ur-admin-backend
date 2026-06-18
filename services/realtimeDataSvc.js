@@ -9,6 +9,9 @@ const cacheRealtime = new Cache();
 let app;
 
 function getApp() {
+  if (admin.apps.length > 0) {
+    return admin.app();
+  }
   if (!app) {
     const credentialsPath = loadEnv('credentials');
     const databaseURL = loadEnv('urldbfirebase');
