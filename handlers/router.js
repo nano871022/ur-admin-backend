@@ -11,7 +11,7 @@ const {
   getCoefficientHandler,
   createSurveyHandler
 } = require('./assemblyHandler');
-const { getAllSurveysHandler } = require('./assemblyHandler');
+
 
 function newRouter() {
   const router = express.Router();
@@ -29,10 +29,9 @@ function newRouter() {
   router.get('/api/health', healthHandler);
   router.get('/api/firebase-data/:tokenName', firebaseDataHandler);
   router.get('/api/stats/active-users', activeUserStatsHandler);
-  router.get('/api/assembly/all', getAllSurveysHandler);
-  router.put('/api/assembly/create', createSurveyHandler);
-
+  
   // Assembly endpoints
+  router.put('/api/assembly/create', createSurveyHandler);
   router.get('/api/assembly/all', getAllSurveysHandler);
   router.get('/api/assembly/attendees', getAttendeesHandler);
   router.get('/api/assembly/coefficient', getCoefficientHandler);

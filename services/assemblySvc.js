@@ -123,6 +123,8 @@ async function getCoefficientData() {
   const coefficientPercentage = Math.round(coefficientSum * 100) / 100;
 
   // Fetch minRequiredPercentage from assemblies collection
+  // Assuming there is a 'current' assembly document or similar.
+  // If not found, default to 50.0 as per objective example.
   let minRequiredPercentage = 50.0;
   try {
     const assemblyDoc = await db.collection('assemblies').doc('active').get();
