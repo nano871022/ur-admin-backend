@@ -6,7 +6,8 @@ const {
   getVotesHandler,
   getCoefficientHandler,
   createSurveyHandler,
-  restartSurveyHandler
+  restartSurveyHandler,
+  closeVotesHandler
 } = require('./assemblyHandler');
 const { checkLogin } = require('./loginHandler');
 const assemblySvc = require('../services/assemblySvc');
@@ -21,7 +22,8 @@ jest.mock('../services/assemblySvc', () => ({
   getSurveyById: jest.fn(),
   getCoefficientData: jest.fn(),
   createSurvey: jest.fn(),
-  restartSurvey: jest.fn()
+  restartSurvey: jest.fn(),
+  closeSurvey: jest.fn()
 }));
 
 const app = express();
@@ -32,6 +34,7 @@ app.get('/api/assembly/votes', getVotesHandler);
 app.get('/api/assembly/coefficient', getCoefficientHandler);
 app.put('/api/assembly/create', createSurveyHandler);
 app.post('/api/assembly/restart', restartSurveyHandler);
+app.post('/api/assembly/close', closeVotesHandler);
 
 describe('Assembly Handlers', () => {
   beforeEach(() => {
@@ -239,6 +242,55 @@ describe('Assembly Handlers', () => {
 
       const res = await request(app)
         .post('/api/assembly/restart')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site')
+        .send({ id: 'nonexistent' });
+
+      expect(res.statusCode).toEqual(404);
+      expect(res.body.error).toContain('Survey not found');
+    });
+  });
+
+  describe('POST /api/assembly/close', () => {
+    it('should return 200 and closed survey when authenticated and id is provided', async () => {
+      const mockClosedSurvey = {
+        id: 'survey123',
+        status: 'CLOSED',
+        mostVotedOption: 'Option 1'
+      };
+      checkLogin.mockResolvedValue(true);
+      assemblySvc.closeSurvey.mockResolvedValue(mockClosedSurvey);
+
+      const res = await request(app)
+        .post('/api/assembly/close')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site')
+        .send({ id: 'survey123' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body).toEqual(mockClosedSurvey);
+      expect(assemblySvc.closeSurvey).toHaveBeenCalledWith('survey123');
+    });
+
+    it('should return 400 when id is missing', async () => {
+      checkLogin.mockResolvedValue(true);
+
+      const res = await request(app)
+        .post('/api/assembly/close')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site')
+        .send({});
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.error).toContain('Missing required field: id');
+    });
+
+    it('should return 404 when survey is not found', async () => {
+      checkLogin.mockResolvedValue(true);
+      assemblySvc.closeSurvey.mockResolvedValue(null);
+
+      const res = await request(app)
+        .post('/api/assembly/close')
         .set('Authorization', 'Bearer valid-token')
         .set('Application', 'ur-admin-site')
         .send({ id: 'nonexistent' });

@@ -205,11 +205,109 @@ async function restartSurvey(id) {
   return mapSurveyDoc(updatedDoc);
 }
 
+/**
+ * Closes a survey, aggregates votes, and calculates final results.
+ * @param {string} id The survey ID.
+ * @returns {Promise<Object|null>} The updated survey object or null if not found.
+ */
+async function closeSurvey(id) {
+  const db = admin.firestore();
+  const docRef = db.collection('surveys').doc(id);
+  const doc = await docRef.get();
+
+  if (!doc.exists) {
+    return null;
+  }
+
+  const data = doc.data();
+  const now = new Date();
+  let timeUsed = "0";
+
+  if (data.createDate) {
+    const createDate = data.createDate.toDate ? data.createDate.toDate() : new Date(data.createDate);
+    const diffMs = now - createDate;
+    timeUsed = Math.floor(diffMs / 1000).toString();
+  }
+
+  // Fetch all votes for this survey
+  const votesSnapshot = await db.collection('votes').where('surveyId', '==', id).get();
+
+  // Fetch present attendees to map their coefficients
+  const attendeesSnapshot = await db.collection('attendees').where('present', '==', true).get();
+  const attendeeCoefficients = {};
+  attendeesSnapshot.forEach(aDoc => {
+    attendeeCoefficients[aDoc.id] = aDoc.data().coefficient || 0;
+  });
+
+  // Aggregation maps
+  const optionVotesCount = {};
+  const optionCoefficientSum = {};
+
+  // Initialize maps with existing options
+  const options = data.options || [];
+  options.forEach(opt => {
+    const val = opt.value || opt.text;
+    optionVotesCount[val] = 0;
+    optionCoefficientSum[val] = 0;
+  });
+
+  // Count votes and sum coefficients
+  votesSnapshot.forEach(vDoc => {
+    const vData = vDoc.data();
+    const val = vData.value;
+    const attendeeId = vData.attendeeId;
+
+    if (optionVotesCount[val] !== undefined) {
+      optionVotesCount[val]++;
+      optionCoefficientSum[val] += (attendeeCoefficients[attendeeId] || 0);
+    }
+  });
+
+  // Update options array and find the winner
+  let mostVotedOption = "";
+  let mostVotedVotes = -1;
+  let mostVotedCoefficient = 0;
+
+  const updatedOptions = options.map(opt => {
+    const val = opt.value || opt.text;
+    const count = optionVotesCount[val] || 0;
+    const coeff = Math.round((optionCoefficientSum[val] || 0) * 100) / 100;
+
+    if (count > mostVotedVotes) {
+      mostVotedVotes = count;
+      mostVotedOption = val;
+      mostVotedCoefficient = coeff;
+    }
+
+    const updatedOpt = { ...opt };
+    if (updatedOpt.votes !== undefined) updatedOpt.votes = count;
+    if (updatedOpt.votesCount !== undefined) updatedOpt.votesCount = count;
+    updatedOpt.coefficientVotes = coeff;
+
+    return updatedOpt;
+  });
+
+  const updateData = {
+    status: 'CLOSED',
+    timeUsed: timeUsed,
+    options: updatedOptions,
+    mostVotedOption: mostVotedOption,
+    mostVotedVotes: mostVotedVotes,
+    mostVotedCoefficient: mostVotedCoefficient
+  };
+
+  await docRef.update(updateData);
+
+  const updatedDoc = await docRef.get();
+  return mapSurveyDoc(updatedDoc);
+}
+
 module.exports = {
   getAttendeesMetrics,
   getAllSurveys,
   getSurveyById,
   getCoefficientData,
   createSurvey,
-  restartSurvey
+  restartSurvey,
+  closeSurvey
 };

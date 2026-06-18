@@ -155,11 +155,43 @@ async function restartSurveyHandler(req, res) {
   }
 }
 
+/**
+ * Handler for POST /api/assembly/close
+ * Formally freezes voting inputs on a survey, calculate final metrics, and compile results.
+ */
+async function closeVotesHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    const { id } = req.body;
+    console.log(`=== closeVotesHandler: Closing survey ID: ${id}`);
+
+    if (!id) {
+      return res.status(400).json({ code: "400", error: "Missing required field: id" });
+    }
+
+    const closedSurvey = await assemblySvc.closeSurvey(id);
+
+    if (!closedSurvey) {
+      return res.status(404).json({ code: "404", error: "Survey not found" });
+    }
+
+    res.status(200).json(closedSurvey);
+  } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('closeVotesHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+}
+
 module.exports = {
   getAttendeesHandler,
   getAllSurveysHandler,
   getVotesHandler,
   getCoefficientHandler,
   createSurveyHandler,
-  restartSurveyHandler
+  restartSurveyHandler,
+  closeVotesHandler
 };
