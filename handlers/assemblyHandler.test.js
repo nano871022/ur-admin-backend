@@ -110,12 +110,17 @@ const { checkLogin } = require('./loginHandler');
 // Mock admin
 jest.mock('firebase-admin', () => {
   const getMock = jest.fn();
+  const addMock = jest.fn();
   const collectionMock = jest.fn(() => ({
-    get: getMock
+    get: getMock,
+    add: addMock
   }));
   const firestoreMock = jest.fn(() => ({
     collection: collectionMock
   }));
+  firestoreMock.FieldValue = {
+    serverTimestamp: jest.fn(() => 'mock-timestamp')
+  };
   return {
     firestore: firestoreMock
   };
@@ -215,6 +220,73 @@ describe('GET /api/assembly/coefficient', () => {
 
     expect(res.statusCode).toEqual(500);
     expect(res.body).toEqual({ code: '500', error: 'Firestore error' });
+    expect(res.body.code).toEqual('500');
+  });
+});
+
+describe('PUT /api/assembly/create', () => {
+  it('should return 201 and the created survey', async () => {
+    const mockDocRef = { id: 'new-survey-id' };
+    admin.firestore().collection().add.mockResolvedValue(mockDocRef);
+
+    const payload = {
+      question: 'Should we approve the new budget?',
+      options: [
+        { value: 'Yes', votes: 0 },
+        { value: 'No', votes: 0 }
+      ]
+    };
+
+    const res = await request(app)
+      .put('/api/assembly/create')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Application', 'ur-admin-site')
+      .send(payload);
+
+    expect(res.statusCode).toEqual(201);
+    expect(res.body.id).toEqual('new-survey-id');
+    expect(res.body.question).toEqual(payload.question);
+    expect(res.body.status).toEqual('OPEN');
+    expect(res.body.options.length).toBe(2);
+    expect(res.body.options[0].text).toEqual('Yes');
+    expect(res.body.options[0].votesCount).toEqual(0);
+
+    expect(admin.firestore().collection).toHaveBeenCalledWith('surveys');
+    expect(admin.firestore().collection().add).toHaveBeenCalledWith({
+      question: payload.question,
+      status: 'OPEN',
+      createDate: 'mock-timestamp',
+      timeUsed: '0',
+      options: payload.options
+    });
+  });
+
+  it('should return 400 when missing required fields', async () => {
+    const res = await request(app)
+      .put('/api/assembly/create')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Application', 'ur-admin-site')
+      .send({ question: 'Only question' });
+
+    expect(res.statusCode).toEqual(400);
+    expect(res.body.error).toContain('Missing required fields');
+  });
+
+  it('should return 500 when firestore fails', async () => {
+    admin.firestore().collection().add.mockRejectedValue(new Error('Firestore error'));
+
+    const payload = {
+      question: 'Question',
+      options: [{ value: 'Opt 1', votes: 0 }]
+    };
+
+    const res = await request(app)
+      .put('/api/assembly/create')
+      .set('Authorization', 'Bearer valid-token')
+      .set('Application', 'ur-admin-site')
+      .send(payload);
+
+    expect(res.statusCode).toEqual(500);
     expect(res.body.code).toEqual('500');
   });
 });

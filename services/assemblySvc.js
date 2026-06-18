@@ -68,6 +68,41 @@ async function getAllSurveys() {
 }
 
 /**
+ * Creates a new survey in Firestore.
+ * @param {string} question The survey question.
+ * @param {Array} options The survey options.
+ * @returns {Promise<Object>} The created survey metadata.
+ */
+async function createSurvey(question, options) {
+  const db = admin.firestore();
+
+  const newSurveyData = {
+    question: question,
+    status: 'OPEN',
+    createDate: admin.firestore.FieldValue.serverTimestamp(),
+    timeUsed: "0",
+    options: options.map(opt => ({
+      value: opt.value || '',
+      votes: opt.votes !== undefined ? opt.votes : 0
+    }))
+  };
+
+  const docRef = await db.collection('surveys').add(newSurveyData);
+
+  return {
+    id: docRef.id,
+    question: newSurveyData.question,
+    status: newSurveyData.status,
+    createdAt: new Date().toISOString(),
+    options: newSurveyData.options.map(opt => ({
+      text: opt.value,
+      votesCount: opt.votes,
+      coefficientVotes: 0
+    }))
+  };
+}
+
+/*
  * Retrieves real-time quorum and coefficient metrics.
  */
 async function getCoefficientData() {
@@ -111,5 +146,6 @@ async function getCoefficientData() {
 module.exports = {
   getAttendeesMetrics,
   getAllSurveys,
-  getCoefficientData
+  getCoefficientData,
+  createSurvey
 };

@@ -1,4 +1,4 @@
-const assemblySvc = require('../services/assemblySvc');
+const { getAllSurveys, createSurvey } = require('../services/assemblySvc');
 const { checkLogin } = require('./loginHandler');
 
 /**
@@ -43,6 +43,34 @@ async function getAllSurveysHandler(req, res) {
 }
 
 /**
+ * Handler for PUT /api/assembly/create
+ * Initializes and persists a new survey question.
+ */
+async function createSurveyHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    console.log('=== createSurveyHandler');
+    const { question, options } = req.body;
+
+    if (!question || !options || !Array.isArray(options)) {
+      return res.status(400).json({ code: "400", error: "Missing required fields: question and options (array)" });
+    }
+
+    const newSurvey = await createSurvey(question, options);
+
+    res.status(201).json(newSurvey);
+      } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('createSurveyHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+
+
+    
+ /*
  * Handler for GET /api/assembly/coefficient
  */
 async function getCoefficientHandler(req, res) {
@@ -65,5 +93,6 @@ async function getCoefficientHandler(req, res) {
 module.exports = {
   getAttendeesHandler,
   getAllSurveysHandler,
-  getCoefficientHandler
+  getCoefficientHandler,
+  createSurveyHandler
 };

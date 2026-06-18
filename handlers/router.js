@@ -8,7 +8,8 @@ const { activeUserStatsHandler } = require('./bigqueryHandler');
 const {
   getAttendeesHandler,
   getAllSurveysHandler,
-  getCoefficientHandler
+  getCoefficientHandler,
+  createSurveyHandler
 } = require('./assemblyHandler');
 const { getAllSurveysHandler } = require('./assemblyHandler');
 
@@ -29,6 +30,7 @@ function newRouter() {
   router.get('/api/firebase-data/:tokenName', firebaseDataHandler);
   router.get('/api/stats/active-users', activeUserStatsHandler);
   router.get('/api/assembly/all', getAllSurveysHandler);
+  router.put('/api/assembly/create', createSurveyHandler);
 
   // Assembly endpoints
   router.get('/api/assembly/all', getAllSurveysHandler);
