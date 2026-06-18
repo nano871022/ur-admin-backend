@@ -10,7 +10,8 @@ const {
   getAllSurveysHandler,
   getVotesHandler,
   getCoefficientHandler,
-  createSurveyHandler
+  createSurveyHandler,
+  restartSurveyHandler
 } = require('./assemblyHandler');
 
 
@@ -37,6 +38,7 @@ function newRouter() {
   router.get('/api/assembly/votes', getVotesHandler);
   router.get('/api/assembly/attendees', getAttendeesHandler);
   router.get('/api/assembly/coefficient', getCoefficientHandler);
+  router.post('/api/assembly/restart', restartSurveyHandler);
 
   return router;
 }

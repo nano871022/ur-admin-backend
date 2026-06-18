@@ -120,10 +120,46 @@ async function getCoefficientHandler(req, res) {
   }
 }
 
+/**
+ * Handler for POST /api/assembly/restart
+ * Resets an existing survey back to an open status and wipes previous vote tabulations.
+ */
+async function restartSurveyHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    const { id } = req.body;
+    console.log(`=== restartSurveyHandler: Restarting survey ID: ${id}`);
+
+    if (!id) {
+      return res.status(400).json({ code: "400", error: "Missing required field: id" });
+    }
+
+    const updatedSurvey = await assemblySvc.restartSurvey(id);
+
+    if (!updatedSurvey) {
+      return res.status(404).json({ code: "404", error: "Survey not found" });
+    }
+
+    res.status(200).json({
+      code: "200",
+      message: "Survey restarted successfully",
+      survey: updatedSurvey
+    });
+  } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('restartSurveyHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+}
+
 module.exports = {
   getAttendeesHandler,
   getAllSurveysHandler,
   getVotesHandler,
   getCoefficientHandler,
-  createSurveyHandler
+  createSurveyHandler,
+  restartSurveyHandler
 };
