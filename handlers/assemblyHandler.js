@@ -1,4 +1,4 @@
-const { getAllSurveys, createSurvey } = require('../services/assemblySvc');
+const assemblySvc = require('../services/assemblySvc');
 const { checkLogin } = require('./loginHandler');
 
 /**
@@ -43,6 +43,37 @@ async function getAllSurveysHandler(req, res) {
 }
 
 /**
+ * Handler for GET /api/assembly/votes?id={id}
+ * Retrieves specific voting details for an isolated survey.
+ */
+async function getVotesHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    const id = req.query.id;
+    console.log(`=== getVotesHandler: Fetching votes for survey ID: ${id}`);
+
+    if (!id) {
+      return res.status(400).json({ code: "400", error: "Missing required query parameter: id" });
+    }
+
+    const survey = await assemblySvc.getSurveyById(id);
+
+    if (!survey) {
+      return res.status(404).json({ code: "404", error: "Survey not found" });
+    }
+
+    res.status(200).json(survey);
+  } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('getVotesHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+}
+
+/**
  * Handler for PUT /api/assembly/create
  * Initializes and persists a new survey question.
  */
@@ -57,20 +88,19 @@ async function createSurveyHandler(req, res) {
       return res.status(400).json({ code: "400", error: "Missing required fields: question and options (array)" });
     }
 
-    const newSurvey = await createSurvey(question, options);
+    const newSurvey = await assemblySvc.createSurvey(question, options);
 
     res.status(201).json(newSurvey);
-      } catch (error) {
+  } catch (error) {
     if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
       return res.status(401).send(error.message);
     }
     console.error('createSurveyHandler Error:', error);
     res.status(500).json({ code: "500", error: error.message });
   }
+}
 
-
-    
- /*
+/*
  * Handler for GET /api/assembly/coefficient
  */
 async function getCoefficientHandler(req, res) {
@@ -93,6 +123,7 @@ async function getCoefficientHandler(req, res) {
 module.exports = {
   getAttendeesHandler,
   getAllSurveysHandler,
+  getVotesHandler,
   getCoefficientHandler,
   createSurveyHandler
 };
