@@ -1,6 +1,35 @@
 const admin = require('firebase-admin');
 
 /**
+ * Maps a Firestore survey document to the Survey interface.
+ * @param {Object} doc Firestore DocumentSnapshot.
+ * @returns {Object} Mapped survey object.
+ */
+function mapSurveyDoc(doc) {
+  const data = doc.data();
+  const survey = {
+    id: doc.id,
+    question: data.question || '',
+    status: data.status || 'CLOSED',
+    createdAt: data.createDate && typeof data.createDate.toDate === 'function'
+      ? data.createDate.toDate().toISOString()
+      : (data.createDate || null),
+    options: data.options ? data.options.map(opt => ({
+      text: opt.text || opt.value || '',
+      votesCount: opt.votesCount !== undefined ? opt.votesCount : (opt.votes !== undefined ? opt.votes : 0),
+      coefficientVotes: opt.coefficientVotes || 0
+    })) : []
+  };
+
+  // Include summary fields if they exist
+  if (data.mostVotedOption) survey.mostVotedOption = data.mostVotedOption;
+  if (data.mostVotedVotes !== undefined) survey.mostVotedVotes = data.mostVotedVotes;
+  if (data.mostVotedCoefficient !== undefined) survey.mostVotedCoefficient = data.mostVotedCoefficient;
+
+  return survey;
+}
+
+/**
  * Retrieves assembly attendance metrics from Firestore.
  * Queries the 'assemblies' collection for an active assembly.
  * @returns {Promise<{attendanceCount: number, totalUnits: number}>}
@@ -39,32 +68,26 @@ async function getAllSurveys() {
 
   const surveys = [];
   surveysSnapshot.forEach(doc => {
-    const data = doc.data();
-
-    // Map Firestore data to Survey interface
-    const survey = {
-      id: doc.id,
-      question: data.question || '',
-      status: data.status || 'CLOSED',
-      createdAt: data.createDate && typeof data.createDate.toDate === 'function'
-        ? data.createDate.toDate().toISOString()
-        : (data.createDate || null),
-      options: data.options ? data.options.map(opt => ({
-        text: opt.text || opt.value || '',
-        votesCount: opt.votesCount !== undefined ? opt.votesCount : (opt.votes !== undefined ? opt.votes : 0),
-        coefficientVotes: opt.coefficientVotes || 0
-      })) : []
-    };
-
-    // Include summary fields if they exist
-    if (data.mostVotedOption) survey.mostVotedOption = data.mostVotedOption;
-    if (data.mostVotedVotes !== undefined) survey.mostVotedVotes = data.mostVotedVotes;
-    if (data.mostVotedCoefficient !== undefined) survey.mostVotedCoefficient = data.mostVotedCoefficient;
-
-    surveys.push(survey);
+    surveys.push(mapSurveyDoc(doc));
   });
 
   return surveys;
+}
+
+/**
+ * Fetches a single survey from Firestore by ID.
+ * @param {string} id The survey ID.
+ * @returns {Promise<Object|null>} The survey object or null if not found.
+ */
+async function getSurveyById(id) {
+  const db = admin.firestore();
+  const doc = await db.collection('surveys').doc(id).get();
+
+  if (!doc.exists) {
+    return null;
+  }
+
+  return mapSurveyDoc(doc);
 }
 
 /**
@@ -148,6 +171,7 @@ async function getCoefficientData() {
 module.exports = {
   getAttendeesMetrics,
   getAllSurveys,
+  getSurveyById,
   getCoefficientData,
   createSurvey
 };

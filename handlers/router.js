@@ -8,6 +8,7 @@ const { activeUserStatsHandler } = require('./bigqueryHandler');
 const {
   getAttendeesHandler,
   getAllSurveysHandler,
+  getVotesHandler,
   getCoefficientHandler,
   createSurveyHandler
 } = require('./assemblyHandler');
@@ -33,6 +34,7 @@ function newRouter() {
   // Assembly endpoints
   router.put('/api/assembly/create', createSurveyHandler);
   router.get('/api/assembly/all', getAllSurveysHandler);
+  router.get('/api/assembly/votes', getVotesHandler);
   router.get('/api/assembly/attendees', getAttendeesHandler);
   router.get('/api/assembly/coefficient', getCoefficientHandler);
 
