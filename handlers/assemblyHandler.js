@@ -1,11 +1,11 @@
-const { getCoefficientData } = require('../services/assemblySvc');
+const assemblySvc = require('../services/assemblySvc');
 const { checkLogin } = require('./loginHandler');
 
 async function getCoefficient(req, res) {
   try {
     await checkLogin(req);
 
-    const data = await getCoefficientData();
+    const data = await assemblySvc.getCoefficientData();
 
     res.status(200).json(data);
   } catch (error) {

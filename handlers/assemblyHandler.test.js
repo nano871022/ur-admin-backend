@@ -1,7 +1,7 @@
 const request = require('supertest');
 const express = require('express');
 const { newRouter } = require('./router');
-const { getCoefficientData } = require('../services/assemblySvc');
+const assemblySvc = require('../services/assemblySvc');
 const { checkLogin } = require('./loginHandler');
 
 // Mock the service and login check
@@ -21,7 +21,7 @@ describe('GET /api/assembly/coefficient', () => {
       quorumPercentage: 62.45,
       minRequiredPercentage: 50.0
     };
-    getCoefficientData.mockResolvedValue(mockData);
+    assemblySvc.getCoefficientData.mockResolvedValue(mockData);
     checkLogin.mockResolvedValue();
 
     const res = await request(app)
@@ -45,7 +45,7 @@ describe('GET /api/assembly/coefficient', () => {
 
   it('should return 500 when service fails', async () => {
     checkLogin.mockResolvedValue();
-    getCoefficientData.mockRejectedValue(new Error('Firestore error'));
+    assemblySvc.getCoefficientData.mockRejectedValue(new Error('Firestore error'));
 
     const res = await request(app)
       .get('/api/assembly/coefficient')
