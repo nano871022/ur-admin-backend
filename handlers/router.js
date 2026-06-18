@@ -5,6 +5,16 @@ const { fcmHandler } = require('./fcmHandler');
 const { healthHandler } = require('./healthHandler');
 const { firebaseDataHandler } = require('./firebaseDatabaseHandler');
 const { activeUserStatsHandler } = require('./bigqueryHandler');
+const {
+  getAttendeesHandler,
+  getAllSurveysHandler,
+  getVotesHandler,
+  getCoefficientHandler,
+  createSurveyHandler,
+  restartSurveyHandler,
+  closeVotesHandler
+} = require('./assemblyHandler');
+
 
 function newRouter() {
   const router = express.Router();
@@ -22,6 +32,15 @@ function newRouter() {
   router.get('/api/health', healthHandler);
   router.get('/api/firebase-data/:tokenName', firebaseDataHandler);
   router.get('/api/stats/active-users', activeUserStatsHandler);
+  
+  // Assembly endpoints
+  router.put('/api/assembly/create', createSurveyHandler);
+  router.get('/api/assembly/all', getAllSurveysHandler);
+  router.get('/api/assembly/votes', getVotesHandler);
+  router.get('/api/assembly/attendees', getAttendeesHandler);
+  router.get('/api/assembly/coefficient', getCoefficientHandler);
+  router.post('/api/assembly/restart', restartSurveyHandler);
+  router.post('/api/assembly/close', closeVotesHandler);
 
   return router;
 }
