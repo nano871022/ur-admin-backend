@@ -163,14 +163,14 @@ async function closeVotesHandler(req, res) {
   try {
     await checkLogin(req);
 
-    const { id } = req.body;
-    console.log(`=== closeVotesHandler: Closing survey ID: ${id}`);
+    const { id, timeUsed } = req.body;
+    console.log(`=== closeVotesHandler: Closing survey ID: ${id}, timeUsed: ${timeUsed}`);
 
     if (!id) {
       return res.status(400).json({ code: "400", error: "Missing required field: id" });
     }
 
-    const closedSurvey = await assemblySvc.closeSurvey(id);
+    const closedSurvey = await assemblySvc.closeSurvey(id, timeUsed);
 
     if (!closedSurvey) {
       return res.status(404).json({ code: "404", error: "Survey not found" });
@@ -186,6 +186,58 @@ async function closeVotesHandler(req, res) {
   }
 }
 
+/**
+ * Handler for DELETE /api/assembly/delete?id={id}
+ */
+async function deleteSurveyHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    const id = req.query.id;
+    console.log(`=== deleteSurveyHandler: Deleting survey ID: ${id}`);
+
+    if (!id) {
+      return res.status(400).json({ code: "400", error: "Missing required query parameter: id" });
+    }
+
+    await assemblySvc.deleteSurvey(id);
+
+    res.status(200).json({ code: "200", message: "Survey deleted successfully" });
+  } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('deleteSurveyHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+}
+
+/**
+ * Handler for PUT /api/assembly/init
+ */
+async function initAssemblyHandler(req, res) {
+  try {
+    await checkLogin(req);
+
+    const { year, date } = req.body;
+    console.log(`=== initAssemblyHandler: Year: ${year}, Date: ${date}`);
+
+    if (!year || !date) {
+      return res.status(400).json({ code: "400", error: "Missing required fields: year and date" });
+    }
+
+    const result = await assemblySvc.initAssembly(year, date);
+
+    res.status(200).json({ code: "200", message: "Assembly initialized successfully", data: result });
+  } catch (error) {
+    if (error.message.includes('Authorization') || error.message.includes('Token') || error.message.includes('Application')) {
+      return res.status(401).send(error.message);
+    }
+    console.error('initAssemblyHandler Error:', error);
+    res.status(500).json({ code: "500", error: error.message });
+  }
+}
+
 module.exports = {
   getAttendeesHandler,
   getAllSurveysHandler,
@@ -193,5 +245,7 @@ module.exports = {
   getCoefficientHandler,
   createSurveyHandler,
   restartSurveyHandler,
-  closeVotesHandler
+  closeVotesHandler,
+  deleteSurveyHandler,
+  initAssemblyHandler
 };

@@ -7,7 +7,9 @@ const {
   getCoefficientHandler,
   createSurveyHandler,
   restartSurveyHandler,
-  closeVotesHandler
+  closeVotesHandler,
+  deleteSurveyHandler,
+  initAssemblyHandler
 } = require('./assemblyHandler');
 const { checkLogin } = require('./loginHandler');
 const assemblySvc = require('../services/assemblySvc');
@@ -23,7 +25,9 @@ jest.mock('../services/assemblySvc', () => ({
   getCoefficientData: jest.fn(),
   createSurvey: jest.fn(),
   restartSurvey: jest.fn(),
-  closeSurvey: jest.fn()
+  closeSurvey: jest.fn(),
+  deleteSurvey: jest.fn(),
+  initAssembly: jest.fn()
 }));
 
 const app = express();
@@ -35,6 +39,8 @@ app.get('/api/assembly/coefficient', getCoefficientHandler);
 app.put('/api/assembly/create', createSurveyHandler);
 app.post('/api/assembly/restart', restartSurveyHandler);
 app.post('/api/assembly/close', closeVotesHandler);
+app.delete('/api/assembly/delete', deleteSurveyHandler);
+app.put('/api/assembly/init', initAssemblyHandler);
 
 describe('Assembly Handlers', () => {
   beforeEach(() => {
@@ -265,11 +271,11 @@ describe('Assembly Handlers', () => {
         .post('/api/assembly/close')
         .set('Authorization', 'Bearer valid-token')
         .set('Application', 'ur-admin-site')
-        .send({ id: 'survey123' });
+        .send({ id: 'survey123', timeUsed: "45" });
 
       expect(res.statusCode).toEqual(200);
       expect(res.body).toEqual(mockClosedSurvey);
-      expect(assemblySvc.closeSurvey).toHaveBeenCalledWith('survey123');
+      expect(assemblySvc.closeSurvey).toHaveBeenCalledWith('survey123', "45");
     });
 
     it('should return 400 when id is missing', async () => {
@@ -297,6 +303,76 @@ describe('Assembly Handlers', () => {
 
       expect(res.statusCode).toEqual(404);
       expect(res.body.error).toContain('Survey not found');
+    });
+  });
+
+  describe('DELETE /api/assembly/delete', () => {
+    it('should return 200 when survey is deleted successfully', async () => {
+      checkLogin.mockResolvedValue(true);
+      assemblySvc.deleteSurvey.mockResolvedValue(true);
+
+      const res = await request(app)
+        .delete('/api/assembly/delete?id=survey123')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site');
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.message).toBe('Survey deleted successfully');
+      expect(assemblySvc.deleteSurvey).toHaveBeenCalledWith('survey123');
+    });
+
+    it('should return 400 when id is missing', async () => {
+      checkLogin.mockResolvedValue(true);
+
+      const res = await request(app)
+        .delete('/api/assembly/delete')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site');
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.error).toContain('Missing required query parameter: id');
+    });
+  });
+
+  describe('PUT /api/assembly/init', () => {
+    it('should return 200 when assembly is initialized successfully', async () => {
+      const mockResult = { year: 2026, date: '18/02/2026', status: 'ACTIVE' };
+      checkLogin.mockResolvedValue(true);
+      assemblySvc.initAssembly.mockResolvedValue(mockResult);
+
+      const res = await request(app)
+        .put('/api/assembly/init')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site')
+        .send({ year: 2026, date: '18/02/2026' });
+
+      expect(res.statusCode).toEqual(200);
+      expect(res.body.message).toBe('Assembly initialized successfully');
+      expect(res.body.data).toEqual(mockResult);
+      expect(assemblySvc.initAssembly).toHaveBeenCalledWith(2026, '18/02/2026');
+    });
+
+    it('should return 400 when missing required fields', async () => {
+      checkLogin.mockResolvedValue(true);
+
+      const res = await request(app)
+        .put('/api/assembly/init')
+        .set('Authorization', 'Bearer valid-token')
+        .set('Application', 'ur-admin-site')
+        .send({ year: 2026 });
+
+      expect(res.statusCode).toEqual(400);
+      expect(res.body.error).toContain('Missing required fields: year and date');
+    });
+
+    it('should return 401 when not authenticated', async () => {
+      checkLogin.mockRejectedValue(new Error('Authorization token is missing'));
+
+      const res = await request(app)
+        .put('/api/assembly/init')
+        .send({ year: 2026, date: '18/02/2026' });
+
+      expect(res.statusCode).toEqual(401);
     });
   });
 });

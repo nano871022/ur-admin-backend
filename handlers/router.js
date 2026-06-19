@@ -12,7 +12,9 @@ const {
   getCoefficientHandler,
   createSurveyHandler,
   restartSurveyHandler,
-  closeVotesHandler
+  closeVotesHandler,
+  deleteSurveyHandler,
+  initAssemblyHandler
 } = require('./assemblyHandler');
 
 
@@ -41,6 +43,8 @@ function newRouter() {
   router.get('/api/assembly/coefficient', getCoefficientHandler);
   router.post('/api/assembly/restart', restartSurveyHandler);
   router.post('/api/assembly/close', closeVotesHandler);
+  router.delete('/api/assembly/delete', deleteSurveyHandler);
+  router.put('/api/assembly/init', initAssemblyHandler);
 
   return router;
 }
