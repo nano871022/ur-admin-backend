@@ -21,6 +21,8 @@ function mapSurveyDoc(doc) {
     })) : []
   };
 
+  if (data.timeUsed) survey.timeUsed = data.timeUsed;
+
   // Include summary fields if they exist
   if (data.mostVotedOption) survey.mostVotedOption = data.mostVotedOption;
   if (data.mostVotedVotes !== undefined) survey.mostVotedVotes = data.mostVotedVotes;
@@ -208,9 +210,10 @@ async function restartSurvey(id) {
 /**
  * Closes a survey, aggregates votes, and calculates final results.
  * @param {string} id The survey ID.
+ * @param {string} [manualTimeUsed] Optional duration in seconds as string.
  * @returns {Promise<Object|null>} The updated survey object or null if not found.
  */
-async function closeSurvey(id) {
+async function closeSurvey(id, manualTimeUsed) {
   const db = getFirestore('firestore-assembly');
   const docRef = db.collection('surveys').doc(id);
   const doc = await docRef.get();
@@ -220,13 +223,17 @@ async function closeSurvey(id) {
   }
 
   const data = doc.data();
-  const now = new Date();
-  let timeUsed = "0";
+  let timeUsed = manualTimeUsed;
 
-  if (data.createDate) {
-    const createDate = data.createDate.toDate ? data.createDate.toDate() : new Date(data.createDate);
-    const diffMs = now - createDate;
-    timeUsed = Math.floor(diffMs / 1000).toString();
+  if (!timeUsed) {
+    const now = new Date();
+    timeUsed = "0";
+
+    if (data.createDate) {
+      const createDate = data.createDate.toDate ? data.createDate.toDate() : new Date(data.createDate);
+      const diffMs = now - createDate;
+      timeUsed = Math.floor(diffMs / 1000).toString();
+    }
   }
 
   // Fetch all votes for this survey

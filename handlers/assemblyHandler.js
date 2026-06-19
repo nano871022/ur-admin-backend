@@ -163,14 +163,14 @@ async function closeVotesHandler(req, res) {
   try {
     await checkLogin(req);
 
-    const { id } = req.body;
-    console.log(`=== closeVotesHandler: Closing survey ID: ${id}`);
+    const { id, timeUsed } = req.body;
+    console.log(`=== closeVotesHandler: Closing survey ID: ${id}, timeUsed: ${timeUsed}`);
 
     if (!id) {
       return res.status(400).json({ code: "400", error: "Missing required field: id" });
     }
 
-    const closedSurvey = await assemblySvc.closeSurvey(id);
+    const closedSurvey = await assemblySvc.closeSurvey(id, timeUsed);
 
     if (!closedSurvey) {
       return res.status(404).json({ code: "404", error: "Survey not found" });

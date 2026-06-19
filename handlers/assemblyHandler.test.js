@@ -271,11 +271,11 @@ describe('Assembly Handlers', () => {
         .post('/api/assembly/close')
         .set('Authorization', 'Bearer valid-token')
         .set('Application', 'ur-admin-site')
-        .send({ id: 'survey123' });
+        .send({ id: 'survey123', timeUsed: "45" });
 
       expect(res.statusCode).toEqual(200);
       expect(res.body).toEqual(mockClosedSurvey);
-      expect(assemblySvc.closeSurvey).toHaveBeenCalledWith('survey123');
+      expect(assemblySvc.closeSurvey).toHaveBeenCalledWith('survey123', "45");
     });
 
     it('should return 400 when id is missing', async () => {

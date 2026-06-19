@@ -17,6 +17,7 @@ export interface Survey {
   question: string;
   status: 'OPEN' | 'CLOSED';
   createdAt: string;
+  timeUsed?: string;
   mostVotedOption?: string;
   mostVotedVotes?: number;
   mostVotedCoefficient?: number;
